@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table (name = "book_for_lease")
-public class bookfolease {
+public class bookforlease {
 
     @Id
     @Generated(Strategy = GenerationType.IDENTITY)
@@ -43,18 +43,24 @@ public class bookfolease {
     @Column (nullable = false)
     private BookStatus status = BookStatus.available;
 
+    // moi quan he: nhieu sach thuoc ve mot the loai
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn (name = "category_id", nullable = false) // khoa ngoai
+    private Category category;
+
     @Column (name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+
     // 1. Sau khi nhap ten cot xong thi click chuot phai chon generate -> chon constructor Constructor (hàm khởi tạo) là một phương thức đặc biệt trong lập trình hướng đối tượng dùng để khởi tạo giá trị ban đầu cho đối tượng khi nó được tạo ra
     // Ý nghĩa chính của Constructor
     // Khởi tạo đối tượng: Tự động chạy khi dùng từ khóa tạo đối tượng (như new) để cấp phát bộ nhớ và gán dữ liệu ban đầu.
     // Thiết lập trạng thái: Giúp đối tượng mang giá trị hợp lệ ngay từ lúc sinh ra, tránh tình trạng dữ liệu rỗng (null) hoặc sai lệch.
     // Tiết kiệm mã nguồn: Thay vì phải gọi từng hàm gán giá trị sau khi tạo đối tượng, constructor giúp gán giá trị trực tiếp qua tham số truyền vào.
-    public bookfolease(Long id, String title, String author, BigDecimal pricePerDay, String isbn, BigDecimal depositPrice, Integer availableCopies, BigDecimal totalQuantity, BigDecimal availableQuantity, BookStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public bookforlease(Long id, String title, String author, BigDecimal pricePerDay, String isbn, BigDecimal depositPrice, Integer availableCopies, BigDecimal totalQuantity, BigDecimal availableQuantity, BookStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.title = title;
         this.author = author;
@@ -65,8 +71,13 @@ public class bookfolease {
         this.totalQuantity = totalQuantity;
         this.availableQuantity = availableQuantity;
         this.status = status;
+        this.category = category;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+
+    public bookforlease() {
+
     }
 
     // click chuot phai chon generate -> chon getter & setter
@@ -157,6 +168,10 @@ public class bookfolease {
         this.status = status;
     }
 
+    public Category getCategory () {return category; }
+
+    public void setCategory (Category category) {this.category = category; }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -172,6 +187,7 @@ public class bookfolease {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
 
     // @PrePersist và @PreUpdate là các chú thích (annotations) dùng để tự động kích hoạt một hàm xử lý trước khi dữ liệu được lưu vào cơ sở dữ liệu.
     // Chúng giúp tự động hóa các tác vụ như ghi nhận thời gian tạo, thời gian cập nhật hoặc chuẩn hóa dữ liệu mà không cần viết mã thủ công nhiều lần
