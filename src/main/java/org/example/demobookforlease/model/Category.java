@@ -1,56 +1,61 @@
 package org.example.demobookforlease.model;
 
-import jakarta.annotation.Generated;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table (name = "categories")
+@Table(name = "categories")
 public class Category {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 255)
+    private String name;
+
+    @Column(length = 500)
+    private String description;
+
+    @Column(nullable = false)
+    private Boolean active = true;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Book> books = new ArrayList<>();
+
     public Category() {
     }
 
-    @Id
-    @Generated(Strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column (nullable = false, length = 255)
-    private String name;
-
-    @Column (length = 500)
-    private String description;
-
-    @Column (nullable = false)
-    private Boolean active;
-
-    @Column (name = "create_at", nullable = false)
-    private LocalDateTime createAt;
-
-    @Column (name = "update_at")
-    private LocalDateTime updateAt;
-
-    // Quan he: mot the loai co nhieu sach
-    @OneToMany (mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<bookforlease> books;
-
-    // constructor
-
-
-    public Category(Long id, String name, String description, Boolean active, LocalDateTime createAt, LocalDateTime updateAt, List<bookforlease> books) {
+    public Category(Long id, String name, String description, Boolean active) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.active = active;
-        this.createAt = createAt;
-        this.updateAt = updateAt;
-        this.books = books;
+        this.active = active != null ? active : true;
     }
 
-    // Getters & Setters
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        if (this.active == null) {
+            this.active = true;
+        }
+    }
 
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -83,55 +88,27 @@ public class Category {
         this.active = active;
     }
 
-    public LocalDateTime getCreateAt() {
-        return createAt;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreateAt(LocalDateTime createAt) {
-        this.createAt = createAt;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdateAt() {
-        return updateAt;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdateAt(LocalDateTime updateAt) {
-        this.updateAt = updateAt;
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
-    public List<bookforlease> getBooks() {
+    public List<Book> getBooks() {
         return books;
     }
 
-    public void setBooks(List<bookforlease> books) {
+    public void setBooks(List<Book> books) {
         this.books = books;
-    }
-
-    // Tự động kích hoạt danh mục (active = true) trước khi INSERT vào database
-    // nếu thuộc tính này đang bị để trống (null)
-    @PrePersist
-    protected void onCreate () {
-        // NHIỆM VỤ: Đảm bảo mọi danh mục khi mới tạo ra, nếu lập trình viên
-        // quên không gán trạng thái, thì mặc định luôn ở trạng thái "Kích hoạt" (true).
-//        if (this.active == null) {
-//            this.active = true;
-//        }
-//        // Cũng có thể chuẩn hóa dữ liệu tại đây, ví dụ: viết hoa chữ cái đầu hoặc trim() khoảng trắng
-//        if (this.name != null) {
-//            this.name = this.name.trim();
-//        }
-        this.createAt = LocalDateTime.now();
-        this.updateAt = LocalDateTime.now();
-    }
-    @PreUpdate
-    protected void onUpdate() {
-        // Chuẩn hóa dữ liệu trước khi lệnh UPDATE chạy
-//        if (this.name != null) {
-//            this.name = this.name.trim();
-//        }
-
-        // Ví dụ logic doanh nghiệp: Nếu một Danh mục bị tắt (active = false),
-        // Có thể tự động ghi nhận thêm lý do hoặc xử lý logic ẩn danh mục tại đây (nếu cần).
-        this.updateAt = LocalDateTime.now();
     }
 }

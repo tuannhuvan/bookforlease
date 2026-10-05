@@ -1,53 +1,54 @@
 package org.example.demobookforlease.model;
 
-import jakarta.annotation.Generated;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table (name = "members")
+@Table(name = "members")
 public class Member {
+
     @Id
-    @Generated(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column (name = "full_name", nullable = false, length = 150)
+    @Column(name = "full_name", nullable = false, length = 150)
     private String fullName;
 
-    @Column (nullable = false, unique = true, length = 100)
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column (nullable = false, length = 20)
+    @Column(nullable = false, length = 20)
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    @Column (nullable = false)
-    private MemberStatus status = MemberStatus.active;
+    @Column(nullable = false)
+    private MemberStatus status = MemberStatus.ACTIVE;
 
-    @Column(name = "create_at", updatable = false)
-    private LocalDateTime createAt;
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
-    // Môí quan hệ
-    @OneToMany (mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Borrowing> borrowings;
-    // Constructor
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Borrowing> borrowings = new ArrayList<>();
 
+    public Member() {
+    }
 
-    public Member(Long id, String fullName, String email, String phone, MemberStatus status, LocalDateTime createAt, List<Borrowing> borrowings) {
+    public Member(Long id, String fullName, String email, String phone, MemberStatus status) {
         this.id = id;
         this.fullName = fullName;
         this.email = email;
         this.phone = phone;
-        this.status = status;
-        this.createAt = createAt;
-        this.borrowings = borrowings;
+        this.status = status != null ? status : MemberStatus.ACTIVE;
     }
 
-    // Getters & Setters
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
-
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -88,12 +89,12 @@ public class Member {
         this.status = status;
     }
 
-    public LocalDateTime getCreateAt() {
-        return createAt;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreateAt(LocalDateTime createAt) {
-        this.createAt = createAt;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public List<Borrowing> getBorrowings() {
@@ -102,10 +103,5 @@ public class Member {
 
     public void setBorrowings(List<Borrowing> borrowings) {
         this.borrowings = borrowings;
-    }
-
-    @PrePersist
-    protected void onCreate(){
-        this.createAt = LocalDateTime.now();
     }
 }

@@ -1,43 +1,51 @@
 package org.example.demobookforlease.model;
 
 import jakarta.persistence.*;
-
-import javax.annotation.processing.Generated;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
-@Table (name = "borrowing_details")
+@Table(name = "borrowing_details")
 public class BorrowingDetail {
+
     @Id
-    @Generated(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // moi quan he: nhieu dong chi tiet thuoc ve mot phieu muon
-    @ManyToMany (fetch = FetchType.LAZY)
-    @JoinColumn (name = "borrowing_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "borrowing_id", nullable = false)
     private Borrowing borrowing;
 
-    @Column (nullable = false)
-    private Integer quantity; // so luong dang ky muon ban dau
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id", nullable = false)
+    private Book book;
 
-    @Column (name = "returned_quantity", nullable = false)
-    private Integer returnedQuantity = 0; // so luong thuc te da tra (mac dinh bang 0)
+    @Column(nullable = false)
+    private Integer quantity; // Số lượng đăng ký mượn ban đầu
+
+    @Column(name = "returned_quantity", nullable = false)
+    private Integer returnedQuantity = 0; // Số lượng thực tế đã trả
+
+    @Column(name = "last_returned_date")
+    private LocalDateTime lastReturnedDate;
+
+    @Column(name = "late_days", nullable = false)
+    private Integer lateDays = 0;
 
     @Column(name = "fine_amount", nullable = false)
-    private BigDecimal fineAmount = BigDecimal.ZERO; // tien phat rieng cua dau sach nay neu qua han/ hong
+    private BigDecimal fineAmount = BigDecimal.ZERO;
 
-    // constructor
-
-
-    public BorrowingDetail(Long id, Borrowing borrowing, Integer quantity, Integer returnedQuantity, BigDecimal fineAmount) {
-        this.id = id;
-        this.borrowing = borrowing;
-        this.quantity = quantity;
-        this.returnedQuantity = returnedQuantity;
-        this.fineAmount = fineAmount;
+    public BorrowingDetail() {
     }
 
-    // getters & setters
+    public BorrowingDetail(Borrowing borrowing, Book book, Integer quantity) {
+        this.borrowing = borrowing;
+        this.book = book;
+        this.quantity = quantity;
+        this.returnedQuantity = 0;
+        this.fineAmount = BigDecimal.ZERO;
+        this.lateDays = 0;
+    }
 
     public Long getId() {
         return id;
@@ -55,6 +63,14 @@ public class BorrowingDetail {
         this.borrowing = borrowing;
     }
 
+    public Book getBook() {
+        return book;
+    }
+
+    public void setBook(Book book) {
+        this.book = book;
+    }
+
     public Integer getQuantity() {
         return quantity;
     }
@@ -69,6 +85,22 @@ public class BorrowingDetail {
 
     public void setReturnedQuantity(Integer returnedQuantity) {
         this.returnedQuantity = returnedQuantity;
+    }
+
+    public LocalDateTime getLastReturnedDate() {
+        return lastReturnedDate;
+    }
+
+    public void setLastReturnedDate(LocalDateTime lastReturnedDate) {
+        this.lastReturnedDate = lastReturnedDate;
+    }
+
+    public Integer getLateDays() {
+        return lateDays;
+    }
+
+    public void setLateDays(Integer lateDays) {
+        this.lateDays = lateDays;
     }
 
     public BigDecimal getFineAmount() {

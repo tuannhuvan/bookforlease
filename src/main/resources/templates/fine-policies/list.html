@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout('Cấu Hình Phí Phạt', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="row">
+        <!-- Configure Policy Form -->
+        <div class="col-md-5 mb-4">
+            <div class="card card-custom">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-sliders text-primary me-2"></i>Thiết Lập Chính Sách Phạt Mới</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="@{/fine-policies}" th:object="${policyForm}" method="post" class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Mức Phí Phạt Mỗi Ngày/Cuốn (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" th:field="*{dailyFineAmount}" class="form-control" th:errorclass="is-invalid" min="0" step="1000" placeholder="Ví dụ: 10000" required>
+                            <div class="invalid-feedback" th:errors="*{dailyFineAmount}"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Mức Phí Phạt Tối Đa (Max Fine Ceiling - VNĐ)</label>
+                            <input type="number" th:field="*{maxFineAmount}" class="form-control" min="0" step="10000" placeholder="Bỏ trống nếu không giới hạn">
+                            <div class="form-text">Mức trần phí phạt tối đa cho 1 dòng sách trả muộn.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Số Ngày Ân Hạn (Grace Days)</label>
+                            <input type="number" th:field="*{graceDays}" class="form-control" min="0" placeholder="0">
+                            <div class="form-text">Số ngày trễ được miễn tính phạt ban đầu.</div>
+                        </div>
+
+                        <div class="col-12 form-check">
+                            <input type="checkbox" th:field="*{active}" class="form-check-input" id="activeCheck" checked>
+                            <label class="form-check-label fw-semibold" for="activeCheck">Kích hoạt làm chính sách áp dụng hiện tại</label>
+                        </div>
+
+                        <div class="col-12 pt-2">
+                            <button type="submit" class="btn btn-primary btn-primary-custom w-100 py-2"><i class="bi bi-save me-1"></i> Lưu Cấu Hình</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Policy History List -->
+        <div class="col-md-7">
+            <div class="card card-custom">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Lịch Sử Chính Sách Phạt</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom align-middle mb-0">
+                            <thead>
+                            <tr>
+                                <th class="ps-4">#ID</th>
+                                <th>Mức Phạt/Ngày</th>
+                                <th>Ân Hạn</th>
+                                <th>Mức Trần Tối Đa</th>
+                                <th class="text-center">Trạng Thái</th>
+                                <th class="text-end pe-4">Ngày Tạo</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="p : ${policies}">
+                                <td class="ps-4 fw-bold" th:text="'#' + ${p.id}">#1</td>
+                                <td class="fw-bold text-primary" th:text="${#numbers.formatDecimal(p.dailyFineAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">10.000 đ</td>
+                                <td th:text="${p.graceDays} + ' ngày'">0 ngày</td>
+                                <td th:text="${p.maxFineAmount != null ? #numbers.formatDecimal(p.maxFineAmount, 0, 'COMMA', 0, 'POINT') + ' đ' : 'Không trần'}">500.000 đ</td>
+                                <td class="text-center">
+                                    <span th:classappend="${p.active ? 'badge bg-success' : 'badge bg-secondary'}"
+                                          th:text="${p.active ? 'ĐANG ÁP DỤNG' : 'Cũ'}">ĐANG ÁP DỤNG</span>
+                                </td>
+                                <td class="text-end pe-4 text-muted small" th:text="${#temporals.format(p.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

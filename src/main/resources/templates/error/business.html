@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout('Lỗi Nghiệp Vụ', ~{::content})}">
+<body>
+<div th:fragment="content" class="text-center py-5">
+    <i class="bi bi-exclamation-octagon text-danger display-1 d-block mb-3"></i>
+    <h3 class="fw-bold text-danger">Lỗi Vi Phạm Quy Tắc Nghiệp Vụ</h3>
+    <div class="alert alert-danger d-inline-block px-4 py-3 my-3 shadow-sm border-0">
+        <span th:text="${errorMessage}">Nghiệp vụ không hợp lệ.</span>
+    </div>
+    <br>
+    <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 mt-2 me-2">Quay Lại</a>
+    <a href="/borrowings" class="btn btn-primary btn-primary-custom px-4 mt-2">Trang Chủ</a>
+</div>
+</body>
+</html>

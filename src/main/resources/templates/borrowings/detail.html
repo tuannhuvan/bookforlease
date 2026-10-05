@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout('Chi Tiết Phiếu Mượn', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">
+                Chi Tiết Phiếu Mượn <span class="text-primary" th:text="'#' + ${borrowing.id}">#1</span>
+            </h3>
+            <p class="text-muted mb-0">Thông tin chi tiết mượn trả, phí phạt và thanh toán</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/borrowings" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Quay lại</a>
+            <a th:if="${borrowing.status != T(org.example.demobookforlease.model.BorrowingStatus).RETURNED and borrowing.status != T(org.example.demobookforlease.model.BorrowingStatus).CANCELLED and borrowing.status != T(org.example.demobookforlease.model.BorrowingStatus).FINE_PAID}"
+               th:href="@{/borrowings/{id}/return(id=${borrowing.id})}" class="btn btn-success">
+                <i class="bi bi-box-arrow-in-down me-1"></i> Trả Sách
+            </a>
+            <a th:if="${borrowing.unpaidFineAmount > 0}"
+               th:href="@{/borrowings/{id}/payments/new(id=${borrowing.id})}" class="btn btn-warning fw-semibold">
+                <i class="bi bi-cash-stack me-1"></i> Thanh Toán Phí
+            </a>
+        </div>
+    </div>
+
+    <!-- Overview Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card card-custom p-3 bg-white">
+                <span class="text-muted small">Trạng Thái Phiếu</span>
+                <div class="mt-1">
+                    <span th:if="${borrowing.status == T(org.example.demobookforlease.model.BorrowingStatus).BORROWING}" class="badge bg-primary fs-6">BORROWING</span>
+                    <span th:if="${borrowing.status == T(org.example.demobookforlease.model.BorrowingStatus).PARTIALLY_RETURNED}" class="badge bg-info text-dark fs-6">PARTIALLY_RETURNED</span>
+                    <span th:if="${borrowing.status == T(org.example.demobookforlease.model.BorrowingStatus).RETURNED}" class="badge bg-success fs-6">RETURNED</span>
+                    <span th:if="${borrowing.status == T(org.example.demobookforlease.model.BorrowingStatus).OVERDUE}" class="badge bg-danger fs-6">OVERDUE</span>
+                    <span th:if="${borrowing.status == T(org.example.demobookforlease.model.BorrowingStatus).FINE_PENDING}" class="badge bg-warning text-dark fs-6">FINE_PENDING</span>
+                    <span th:if="${borrowing.status == T(org.example.demobookforlease.model.BorrowingStatus).FINE_PAID}" class="badge bg-success fs-6">FINE_PAID</span>
+                    <span th:if="${borrowing.status == T(org.example.demobookforlease.model.BorrowingStatus).CANCELLED}" class="badge bg-secondary fs-6">CANCELLED</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-custom p-3 bg-white">
+                <span class="text-muted small">Tổng Phí Phạt</span>
+                <h5 class="fw-bold text-dark mt-1" th:text="${#numbers.formatDecimal(borrowing.totalFineAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</h5>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-custom p-3 bg-white">
+                <span class="text-muted small">Đã Thanh Toán / Miễn Giảm</span>
+                <h5 class="fw-bold text-success mt-1" th:text="${#numbers.formatDecimal(borrowing.paidFineAmount.add(borrowing.waivedFineAmount), 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</h5>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-custom p-3 bg-white">
+                <span class="text-muted small">Còn Nợ Phí Phạt</span>
+                <h5 class="fw-bold mt-1" th:classappend="${borrowing.unpaidFineAmount > 0 ? 'text-danger' : 'text-success'}"
+                    th:text="${#numbers.formatDecimal(borrowing.unpaidFineAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Member Info Card -->
+        <div class="col-md-4">
+            <div class="card card-custom h-100">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-person me-2 text-primary"></i>Thông Tin Độc Giả</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Họ tên:</strong> <span th:text="${borrowing.member.fullName}">Nguyễn Văn A</span></p>
+                    <p class="mb-2"><strong>Email:</strong> <span th:text="${borrowing.member.email}">an@example.com</span></p>
+                    <p class="mb-2"><strong>Số ĐT:</strong> <span th:text="${borrowing.member.phone}">0901234567</span></p>
+                    <hr>
+                    <p class="mb-2"><strong>Ngày mượn:</strong> <span th:text="${#temporals.format(borrowing.borrowedDate, 'dd/MM/yyyy HH:mm')}">10/10/2026</span></p>
+                    <p class="mb-2"><strong>Hạn trả:</strong> <span class="fw-bold text-danger" th:text="${#temporals.format(borrowing.dueDate, 'dd/MM/yyyy')}">24/10/2026</span></p>
+                    <p class="mb-0" th:if="${borrowing.returnedDate != null}"><strong>Ngày trả đủ:</strong> <span th:text="${#temporals.format(borrowing.returnedDate, 'dd/MM/yyyy HH:mm')}">-</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Book Details Table -->
+        <div class="col-md-8">
+            <div class="card card-custom h-100">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-book me-2 text-primary"></i>Chi Tiết Đầu Sách Mượn</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom align-middle mb-0">
+                            <thead>
+                            <tr>
+                                <th class="ps-3">Tên Sách</th>
+                                <th class="text-center">Số Mượn</th>
+                                <th class="text-center">Đã Trả</th>
+                                <th class="text-center">Số Ngày Trễ</th>
+                                <th class="text-end pe-3">Phí Phạt Phát Sinh</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="d : ${borrowing.details}">
+                                <td class="ps-3">
+                                    <span class="fw-semibold text-dark d-block" th:text="${d.book.title}">Clean Code</span>
+                                    <span class="text-muted small" th:text="'ISBN: ' + ${d.book.isbn}">978-0132350884</span>
+                                </td>
+                                <td class="text-center fw-bold" th:text="${d.quantity}">1</td>
+                                <td class="text-center">
+                                    <span class="badge bg-success" th:text="${d.returnedQuantity}">0</span>
+                                </td>
+                                <td class="text-center">
+                                    <span th:classappend="${d.lateDays > 0 ? 'text-danger fw-bold' : ''}" th:text="${d.lateDays} + ' ngày'">0 ngày</span>
+                                </td>
+                                <td class="text-end pe-3 fw-bold text-danger" th:text="${#numbers.formatDecimal(d.fineAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History & Actions Tabs -->
+    <div class="row g-4">
+        <!-- Payment & Waiver History -->
+        <div class="col-md-7">
+            <div class="card card-custom mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-receipt me-2 text-primary"></i>Lịch Sử Thanh Toán Phí Phạt</h6>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th class="ps-3">Ngày Thanh Toán</th>
+                            <th>Số Tiền</th>
+                            <th>Phương Thức</th>
+                            <th class="pe-3">Ghi Chú</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="p : ${borrowing.payments}">
+                            <td class="ps-3 text-muted" th:text="${#temporals.format(p.paymentDate, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                            <td class="fw-bold text-success" th:text="${#numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'">50.000 đ</td>
+                            <td th:text="${p.method}">Tiền mặt</td>
+                            <td class="pe-3 text-muted" th:text="${p.note != null ? p.note : '-'}">-</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(borrowing.payments)}">
+                            <td colspan="4" class="text-center py-3 text-muted">Chưa có giao dịch thanh toán nào.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card card-custom">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-shield-check me-2 text-primary"></i>Lịch Sử Miễn / Giảm Phí</h6>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th class="ps-3">Ngày Phê Duyệt</th>
+                            <th>Số Tiền Miễn</th>
+                            <th>Lý Do</th>
+                            <th class="pe-3">Người Duyệt</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="w : ${borrowing.waivers}">
+                            <td class="ps-3 text-muted" th:text="${#temporals.format(w.approvedDate, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                            <td class="fw-bold text-info" th:text="${#numbers.formatDecimal(w.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'">20.000 đ</td>
+                            <td th:text="${w.reason}">Lý do đặc biệt</td>
+                            <td class="pe-3" th:text="${w.approvedBy}">Admin</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(borrowing.waivers)}">
+                            <td colspan="4" class="text-center py-3 text-muted">Chưa có giao dịch miễn giảm nào.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Panel (Waiver Form & Cancel Borrowing) -->
+        <div class="col-md-5">
+            <!-- Waiver Form -->
+            <div th:if="${borrowing.unpaidFineAmount > 0}" class="card card-custom mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0 text-info"><i class="bi bi-gift me-2"></i>Miễn / Giảm Phí Phạt</h6>
+                </div>
+                <div class="card-body p-3">
+                    <form th:action="@{/borrowings/{id}/waivers(id=${borrowing.id})}" th:object="${waiverForm}" method="post">
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Số tiền miễn giảm (VNĐ)</label>
+                            <input type="number" th:field="*{amount}" class="form-control form-control-sm" th:max="${borrowing.unpaidFineAmount}" step="1000" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Lý do miễn giảm</label>
+                            <input type="text" th:field="*{reason}" class="form-control form-control-sm" placeholder="Nhập lý do..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Người duyệt</label>
+                            <input type="text" th:field="*{approvedBy}" class="form-control form-control-sm" placeholder="Tên cán bộ duyệt..." required>
+                        </div>
+                        <button type="submit" class="btn btn-info text-white btn-sm w-100"><i class="bi bi-check2-circle me-1"></i> Xác Nhận Miễn Giảm</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Cancel Borrowing Button -->
+            <div th:if="${borrowing.status == T(org.example.demobookforlease.model.BorrowingStatus).BORROWING}" class="card card-custom border-danger-subtle">
+                <div class="card-body p-3 text-center">
+                    <h6 class="fw-bold text-danger mb-2">Hủy Phiếu Mượn</h6>
+                    <p class="text-muted small mb-3">Chỉ có thể hủy phiếu mượn khi chưa thực hiện trả sách và chưa phát sinh phí phạt.</p>
+                    <form th:action="@{/borrowings/{id}/cancel(id=${borrowing.id})}" method="post">
+                        <button type="submit" class="btn btn-outline-danger btn-sm px-4" onclick="return confirm('Bạn có chắc chắn muốn hủy phiếu mượn này? Dữ liệu tồn kho sách sẽ được phục hồi.');">
+                            <i class="bi bi-x-circle me-1"></i> Hủy Phiếu Mượn
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

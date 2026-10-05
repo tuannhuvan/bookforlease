@@ -1,59 +1,96 @@
 package org.example.demobookforlease.model;
 
-import jakarta.annotation.Generated;
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table (name = "borrowings")
+@Table(name = "borrowings")
 public class Borrowing {
+
     @Id
-    @Generated(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Lien ket vs bang member (thay vi dung truong memberId kieu Long, JPA dung Object Entity)
-    @ManyToOne (fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column (name = "borrow_date", nullable = false)
-    private LocalDateTime borrowDate;
+    @Column(name = "borrowed_date", nullable = false)
+    private LocalDateTime borrowedDate;
 
     @Column(name = "due_date", nullable = false)
     private LocalDateTime dueDate;
 
-    @Column (name = "returned_date") // cho phep null khi chua tra sach
+    @Column(name = "returned_date")
     private LocalDateTime returnedDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private BorrowingStatus status = BorrowingStatus.borrowing;
+    private BorrowingStatus status = BorrowingStatus.BORROWING;
 
-    @Column (nullable = false)
-    private BigDecimal totalFine = BigDecimal.ZERO; // mac dinh phat bang 0
+    @Column(name = "total_fine_amount", nullable = false)
+    private BigDecimal totalFineAmount = BigDecimal.ZERO;
 
-    // moi quan he: mot phieu muon co nhieu dong chi tiet sach
+    @Column(name = "paid_fine_amount", nullable = false)
+    private BigDecimal paidFineAmount = BigDecimal.ZERO;
+
+    @Column(name = "unpaid_fine_amount", nullable = false)
+    private BigDecimal unpaidFineAmount = BigDecimal.ZERO;
+
+    @Column(name = "waived_fine_amount", nullable = false)
+    private BigDecimal waivedFineAmount = BigDecimal.ZERO;
+
+    @OneToMany(mappedBy = "borrowing", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<BorrowingDetail> details = new ArrayList<>();
+
     @OneToMany(mappedBy = "borrowing", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List <BorrowingDetail> details;
+    private List<FinePayment> payments = new ArrayList<>();
 
-    // constructor
+    @OneToMany(mappedBy = "borrowing", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<FineWaiver> waivers = new ArrayList<>();
 
-    public Borrowing(Long id, Member member, LocalDateTime borrowDate, LocalDateTime dueDate, LocalDateTime returnedDate, BorrowingStatus status, BigDecimal totalFine, List<BorrowingDetail> details) {
-        this.id = id;
-        this.member = member;
-        this.borrowDate = borrowDate;
-        this.dueDate = dueDate;
-        this.returnedDate = returnedDate;
-        this.status = status;
-        this.totalFine = totalFine;
-        this.details = details;
+    public Borrowing() {
     }
 
-    // getters & setters
+    public Borrowing(Member member, LocalDateTime dueDate) {
+        this.member = member;
+        this.borrowedDate = LocalDateTime.now();
+        this.dueDate = dueDate;
+        this.status = BorrowingStatus.BORROWING;
+    }
 
+    @PrePersist
+    protected void onCreate() {
+        if (this.borrowedDate == null) {
+            this.borrowedDate = LocalDateTime.now();
+        }
+    }
+
+    public void recalculateUnpaidFine() {
+        if (totalFineAmount == null) totalFineAmount = BigDecimal.ZERO;
+        if (paidFineAmount == null) paidFineAmount = BigDecimal.ZERO;
+        if (waivedFineAmount == null) waivedFineAmount = BigDecimal.ZERO;
+        
+        BigDecimal remaining = totalFineAmount.subtract(paidFineAmount).subtract(waivedFineAmount);
+        this.unpaidFineAmount = remaining.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : remaining;
+    }
+
+    // Helper to calculate total borrowed copies not yet returned
+    public int getRemainingBooksCount() {
+        if (details == null) return 0;
+        return details.stream()
+                .mapToInt(d -> Math.max(0, d.getQuantity() - d.getReturnedQuantity()))
+                .sum();
+    }
+
+    public boolean isFullyReturned() {
+        return getRemainingBooksCount() == 0;
+    }
+
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -70,12 +107,12 @@ public class Borrowing {
         this.member = member;
     }
 
-    public LocalDateTime getBorrowDate() {
-        return borrowDate;
+    public LocalDateTime getBorrowedDate() {
+        return borrowedDate;
     }
 
-    public void setBorrowDate(LocalDateTime borrowDate) {
-        this.borrowDate = borrowDate;
+    public void setBorrowedDate(LocalDateTime borrowedDate) {
+        this.borrowedDate = borrowedDate;
     }
 
     public LocalDateTime getDueDate() {
@@ -102,12 +139,36 @@ public class Borrowing {
         this.status = status;
     }
 
-    public BigDecimal getTotalFine() {
-        return totalFine;
+    public BigDecimal getTotalFineAmount() {
+        return totalFineAmount;
     }
 
-    public void setTotalFine(BigDecimal totalFine) {
-        this.totalFine = totalFine;
+    public void setTotalFineAmount(BigDecimal totalFineAmount) {
+        this.totalFineAmount = totalFineAmount;
+    }
+
+    public BigDecimal getPaidFineAmount() {
+        return paidFineAmount;
+    }
+
+    public void setPaidFineAmount(BigDecimal paidFineAmount) {
+        this.paidFineAmount = paidFineAmount;
+    }
+
+    public BigDecimal getUnpaidFineAmount() {
+        return unpaidFineAmount;
+    }
+
+    public void setUnpaidFineAmount(BigDecimal unpaidFineAmount) {
+        this.unpaidFineAmount = unpaidFineAmount;
+    }
+
+    public BigDecimal getWaivedFineAmount() {
+        return waivedFineAmount;
+    }
+
+    public void setWaivedFineAmount(BigDecimal waivedFineAmount) {
+        this.waivedFineAmount = waivedFineAmount;
     }
 
     public List<BorrowingDetail> getDetails() {
@@ -118,11 +179,19 @@ public class Borrowing {
         this.details = details;
     }
 
-    @PrePersist
-    protected void onCreate (){
-        if (this.borrowDate == null) {
-            this.borrowDate = LocalDateTime.now();
-        }
+    public List<FinePayment> getPayments() {
+        return payments;
     }
 
+    public void setPayments(List<FinePayment> payments) {
+        this.payments = payments;
+    }
+
+    public List<FineWaiver> getWaivers() {
+        return waivers;
+    }
+
+    public void setWaivers(List<FineWaiver> waivers) {
+        this.waivers = waivers;
+    }
 }

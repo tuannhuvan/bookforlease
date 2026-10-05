@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout('Quản Lý Thể Loại', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="row">
+        <!-- Form Add Category -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-custom">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-folder-plus text-primary me-2"></i>Thêm Thể Loại Mới</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="@{/categories}" th:object="${newCategory}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tên Thể Loại <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{name}" class="form-control" placeholder="Tên thể loại..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Mô Tả</label>
+                            <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Mô tả thể loại sách..."></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" th:field="*{active}" class="form-check-input" id="activeCheck" checked>
+                            <label class="form-check-label fw-semibold" for="activeCheck">Kích hoạt thể loại</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-primary-custom w-100 py-2"><i class="bi bi-save me-1"></i> Lưu Thể Loại</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Table -->
+        <div class="col-md-8">
+            <div class="card card-custom">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-tags text-primary me-2"></i>Danh Sách Thể Loại</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover align-middle mb-0">
+                            <thead>
+                            <tr>
+                                <th class="ps-4">#ID</th>
+                                <th>Tên Thể Loại</th>
+                                <th>Mô Tả</th>
+                                <th class="text-center">Trạng Thái</th>
+                                <th class="text-end pe-4">Ngày Tạo</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="cat : ${categories}">
+                                <td class="ps-4 fw-bold text-secondary" th:text="'#' + ${cat.id}">#1</td>
+                                <td class="fw-bold text-dark" th:text="${cat.name}">Lập Trình</td>
+                                <td class="text-muted" th:text="${cat.description}">Sách lập trình</td>
+                                <td class="text-center">
+                                    <span th:classappend="${cat.active ? 'badge bg-success' : 'badge bg-secondary'}"
+                                          th:text="${cat.active ? 'Hoạt động' : 'Tắt'}">
+                                        Hoạt động
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4 text-muted small" th:text="${#temporals.format(cat.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(categories)}">
+                                <td colspan="5" class="text-center py-4 text-muted">Chưa có thể loại nào.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

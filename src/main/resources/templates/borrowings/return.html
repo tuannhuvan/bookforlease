@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout('Trả Sách', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card card-custom">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-box-arrow-in-down text-success me-2"></i>Trả Sách Cho Phiếu Mượn <span class="text-primary" th:text="'#' + ${borrowing.id}">#1</span>
+                    </h5>
+                    <span class="badge bg-light text-dark border">
+                        Hạn trả: <strong th:text="${#temporals.format(borrowing.dueDate, 'dd/MM/yyyy')}">24/10/2026</strong>
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="@{/borrowings/{id}/return(id=${borrowing.id})}" th:object="${returnForm}" method="post">
+                        <input type="hidden" th:field="*{borrowingId}"/>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Ngày Trả Thực Tế <span class="text-danger">*</span></label>
+                                <input type="date" th:field="*{returnDate}" class="form-control" required>
+                                <div class="form-text">Nếu ngày trả vượt quá hạn trả, hệ thống sẽ tự động tính số ngày trễ và phí phạt phát sinh.</div>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-list-check me-1"></i> Nhập Số Lượng Trả Cho Từng Sách</h6>
+
+                        <div class="table-responsive mb-4">
+                            <table class="table table-bordered table-hover align-middle">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>Tên Sách</th>
+                                    <th class="text-center">Số Lượng Đã Mượn</th>
+                                    <th class="text-center">Đã Trả Trước Đó</th>
+                                    <th class="text-center">Còn Đang Mượn</th>
+                                    <th class="text-center" style="width: 180px;">Số Lượng Trả Lần Này</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="item, itemStat : *{items}">
+                                    <input type="hidden" th:field="*{items[__${itemStat.index}__].detailId}"/>
+                                    <input type="hidden" th:field="*{items[__${itemStat.index}__].bookId}"/>
+                                    <input type="hidden" th:field="*{items[__${itemStat.index}__].bookTitle}"/>
+                                    <input type="hidden" th:field="*{items[__${itemStat.index}__].totalBorrowed}"/>
+                                    <input type="hidden" th:field="*{items[__${itemStat.index}__].alreadyReturned}"/>
+                                    <input type="hidden" th:field="*{items[__${itemStat.index}__].remainingToReturn}"/>
+
+                                    <td>
+                                        <strong class="text-dark" th:text="${item.bookTitle}">Clean Code</strong>
+                                    </td>
+                                    <td class="text-center" th:text="${item.totalBorrowed}">2</td>
+                                    <td class="text-center" th:text="${item.alreadyReturned}">0</td>
+                                    <td class="text-center fw-bold text-primary" th:text="${item.remainingToReturn}">2</td>
+                                    <td class="text-center">
+                                        <input type="number" 
+                                               th:field="*{items[__${itemStat.index}__].returnQuantity}" 
+                                               class="form-control text-center font-monospace fw-bold" 
+                                               min="0" 
+                                               th:max="${item.remainingToReturn}" 
+                                               required>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(returnForm.items)}">
+                                    <td colspan="5" class="text-center py-4 text-muted">Tất cả các sách trong phiếu này đã được trả hoàn tất!</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <a th:href="@{/borrowings/{id}(id=${borrowing.id})}" class="btn btn-outline-secondary px-4">Hủy Bỏ</a>
+                            <button type="submit" class="btn btn-success px-4" th:disabled="${#lists.isEmpty(returnForm.items)}">
+                                <i class="bi bi-check-lg me-1"></i> Xác Nhận Trả Sách
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

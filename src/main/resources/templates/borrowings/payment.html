@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout('Thanh Toán Phí Phạt', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card card-custom">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0 text-warning">
+                        <i class="bi bi-cash-coin me-2"></i>Thanh Toán Phí Phạt Phiếu <span th:text="'#' + ${borrowing.id}">#1</span>
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning border-0 rounded-3 mb-4">
+                        <div class="d-flex justify-content-between">
+                            <span>Tổng phí phạt phát sinh:</span>
+                            <strong th:text="${#numbers.formatDecimal(borrowing.totalFineAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Đã thanh toán / miễn giảm:</span>
+                            <strong class="text-success" th:text="${#numbers.formatDecimal(borrowing.paidFineAmount.add(borrowing.waivedFineAmount), 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</strong>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between fs-6 fw-bold">
+                            <span>Số tiền còn nợ phải thu:</span>
+                            <strong class="text-danger" th:text="${#numbers.formatDecimal(borrowing.unpaidFineAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</strong>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/borrowings/{id}/payments(id=${borrowing.id})}" th:object="${paymentForm}" method="post" class="row g-3">
+                        <input type="hidden" th:field="*{borrowingId}"/>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Số Tiền Thanh Toán (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" 
+                                   th:field="*{amount}" 
+                                   class="form-control form-control-lg font-monospace text-primary fw-bold" 
+                                   th:errorclass="is-invalid" 
+                                   min="1000" 
+                                   th:max="${borrowing.unpaidFineAmount}" 
+                                   step="1000" 
+                                   required>
+                            <div class="invalid-feedback" th:errors="*{amount}"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Hình Thức Thanh Toán</label>
+                            <select th:field="*{method}" class="form-select">
+                                <option value="Tiền mặt">Tiền mặt</option>
+                                <option value="Chuyển khoản">Chuyển khoản ngân hàng</option>
+                                <option value="Ví điện tử">Ví điện tử</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Ghi Chú</label>
+                            <textarea th:field="*{note}" class="form-control" rows="2" placeholder="Ghi chú hóa đơn hoặc số giao dịch..."></textarea>
+                        </div>
+
+                        <div class="col-12 mt-4 d-flex justify-content-end gap-2 border-top pt-3">
+                            <a th:href="@{/borrowings/{id}(id=${borrowing.id})}" class="btn btn-outline-secondary px-4">Hủy Bỏ</a>
+                            <button type="submit" class="btn btn-warning fw-semibold px-4"><i class="bi bi-check-circle me-1"></i> Xác Nhận Thanh Toán</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

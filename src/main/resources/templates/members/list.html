@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout('Danh Sách Độc Giả', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-people text-primary me-2"></i>Quản Lý Độc Giả</h3>
+            <p class="text-muted mb-0">Quản lý thông tin và tài khoản độc giả thư viện</p>
+        </div>
+        <a href="/members/new" class="btn btn-primary btn-primary-custom px-4 py-2">
+            <i class="bi bi-person-plus me-1"></i> Thêm Độc Giả
+        </a>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="card card-custom mb-4">
+        <div class="card-body p-3">
+            <form method="get" action="/members" class="row g-3">
+                <div class="col-md-7">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" name="query" th:value="${query}" class="form-control" placeholder="Tìm theo tên, email, số điện thoại...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">-- Trạng thái --</option>
+                        <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}" th:selected="${st == status}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-filter me-1"></i> Lọc</button>
+                    <a href="/members" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Member Table -->
+    <div class="card card-custom">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th class="ps-4">#ID</th>
+                        <th>Họ và Tên</th>
+                        <th>Email</th>
+                        <th>Số Điện Thoại</th>
+                        <th class="text-center">Trạng Thái</th>
+                        <th class="text-end pe-4">Ngày Tham Gia</th>
+                        <th class="text-end pe-4">Thao Tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="m : ${membersPage.content}">
+                        <td class="ps-4 fw-bold text-secondary" th:text="'#' + ${m.id}">#1</td>
+                        <td class="fw-semibold text-dark" th:text="${m.fullName}">Nguyễn Văn A</td>
+                        <td th:text="${m.email}">an@example.com</td>
+                        <td th:text="${m.phone}">0901234567</td>
+                        <td class="text-center">
+                            <span th:if="${m.status == T(org.example.demobookforlease.model.MemberStatus).ACTIVE}" class="badge bg-success">ACTIVE</span>
+                            <span th:if="${m.status == T(org.example.demobookforlease.model.MemberStatus).INACTIVE}" class="badge bg-secondary">INACTIVE</span>
+                            <span th:if="${m.status == T(org.example.demobookforlease.model.MemberStatus).SUSPENDED}" class="badge bg-danger">SUSPENDED</span>
+                        </td>
+                        <td class="text-end pe-4 text-muted small" th:text="${#temporals.format(m.createdAt, 'dd/MM/yyyy')}">01/01/2026</td>
+                        <td class="text-end pe-4">
+                            <a th:href="@{/members/{id}/edit(id=${m.id})}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Sửa</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${membersPage.totalElements == 0}">
+                        <td colspan="7" class="text-center py-4 text-muted">Không tìm thấy độc giả nào.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer bg-white py-3" th:if="${membersPage.totalPages > 1}">
+            <nav class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small" th:text="'Trang ' + (${membersPage.number} + 1) + ' / ' + ${membersPage.totalPages}"></span>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${membersPage.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/members(page=${membersPage.number - 1}, query=${query}, status=${status})}">Trước</a>
+                    </li>
+                    <li th:each="i : ${#numbers.sequence(0, membersPage.totalPages - 1)}" class="page-item" th:classappend="${i == membersPage.number} ? 'active'">
+                        <a class="page-link" th:href="@{/members(page=${i}, query=${query}, status=${status})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${membersPage.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/members(page=${membersPage.number + 1}, query=${query}, status=${status})}">Sau</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>
